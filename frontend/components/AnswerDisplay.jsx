@@ -118,7 +118,7 @@ export default function AnswerDisplay({ result }) {
             ) : (
               <>
                 <Play className="w-4 h-4 fill-current" />
-                ▶ Play Spoken Answer
+                Play Spoken Answer
               </>
             )}
           </button>

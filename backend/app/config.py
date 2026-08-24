@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     LLM_MODEL: str = "gemini-1.5-flash"
     
     model_config = SettingsConfigDict(
-        env_file=(".env", ".env.example", "../.env", "../.env.example"),
+        env_file=(".env", "../.env"),
         env_file_encoding="utf-8",
         extra="ignore"
     )
