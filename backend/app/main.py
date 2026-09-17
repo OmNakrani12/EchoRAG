@@ -22,7 +22,7 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(
-    title="VoiceRAG API",
+    title="EchoRAG API",
     description="Native Multimodal Audio RAG Backend",
     version="1.0.0",
     lifespan=lifespan
