@@ -18,6 +18,12 @@ class Settings(BaseSettings):
     STORAGE_PATH: str = os.getenv("STORAGE_PATH", "./storage")
     DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./storage/voicerag.db")
     
+    USE_S3: bool = os.getenv("USE_S3", "false").lower() == "true"
+    AWS_ACCESS_KEY_ID: str = os.getenv("AWS_ACCESS_KEY_ID", "")
+    AWS_SECRET_ACCESS_KEY: str = os.getenv("AWS_SECRET_ACCESS_KEY", "")
+    AWS_REGION: str = os.getenv("AWS_REGION", "us-east-1")
+    S3_BUCKET_NAME: str = os.getenv("S3_BUCKET_NAME", "")
+    
     # Model choices
     EMBEDDING_MODEL: str = "text-embedding-004"
     LLM_MODEL: str = "gemini-1.5-flash"

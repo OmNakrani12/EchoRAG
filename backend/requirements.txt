@@ -14,3 +14,4 @@ sqlalchemy>=2.0.28
 gTTS>=2.5.1
 pytest>=8.1.0
 httpx>=0.27.0
+boto3>=1.34.0
