@@ -83,30 +83,33 @@ async def upload_audio(
         )
         logger.info(f"[3] Knowledge chunks created: {len(chunk_metas)} internal RAG chunks")
 
-        # 6. Generate Embeddings & Index Qdrant
+        # 6. Generate Embeddings & Index Qdrant in Parallel
         ingestion_status[file_id]["progress_step"] = "Generating Gemini embeddings & indexing in Qdrant"
-        chunks_with_embeddings = []
         
-        db_chunks = []
-        for meta in chunk_metas:
+        from concurrent.futures import ThreadPoolExecutor
+
+        def embed_single_chunk(meta):
             chunk_audio_path = storage_service.get_full_path(meta["audio_path"])
             vector = embedding_service.generate_audio_embedding(chunk_audio_path)
-            
-            chunks_with_embeddings.append({
+            return {
                 "metadata": meta,
                 "vector": vector
-            })
+            }
 
-            db_chunks.append(
-                AudioChunk(
-                    id=meta["chunk_id"],
-                    audio_file_id=file_id,
-                    start_time=meta["start_time"],
-                    end_time=meta["end_time"],
-                    storage_url=meta["audio_path"],
-                    speaker_id=meta.get("speaker_id", "speaker_0")
-                )
+        with ThreadPoolExecutor(max_workers=8) as executor:
+            chunks_with_embeddings = list(executor.map(embed_single_chunk, chunk_metas))
+
+        db_chunks = [
+            AudioChunk(
+                id=meta["chunk_id"],
+                audio_file_id=file_id,
+                start_time=meta["start_time"],
+                end_time=meta["end_time"],
+                storage_url=meta["audio_path"],
+                speaker_id=meta.get("speaker_id", "speaker_0")
             )
+            for meta in chunk_metas
+        ]
 
         logger.info(f"[4] Embeddings generated: {len(chunks_with_embeddings)} acoustic vectors")
 

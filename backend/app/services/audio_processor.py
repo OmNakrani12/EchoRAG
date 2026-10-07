@@ -132,45 +132,47 @@ class AudioProcessor:
         if total_seconds == 0:
             return []
 
+        raw_chunks_to_process = []
         while start_sec < total_seconds:
             end_sec = min(start_sec + c_duration, total_seconds)
-            
             start_sample = int(start_sec * sr)
             end_sample = int(end_sec * sr)
-            
             chunk_samples = audio_data[start_sample:end_sample]
             
             if len(chunk_samples) > 0:
                 chunk_id = f"{audio_file_id}_chunk_{chunk_index:03d}"
-                chunk_filename = f"{chunk_id}.wav"
-                
-                # Save temp wav file using pure Python wave module
-                temp_chunk_path = storage_service.base_path / "chunks" / f"temp_{chunk_filename}"
-                self.save_wav_samples(temp_chunk_path, chunk_samples, sr)
-                
-                # Move to storage service
-                with open(temp_chunk_path, "rb") as f:
-                    storage_url = storage_service.save_file(f.read(), chunk_filename, subfolder="chunks")
-                
-                if temp_chunk_path.exists():
-                    temp_chunk_path.unlink()
-
-                chunk_meta = {
-                    "chunk_id": chunk_id,
-                    "audio_file_id": audio_file_id,
-                    "start_time": round(start_sec, 2),
-                    "end_time": round(end_sec, 2),
-                    "audio_path": storage_url,
-                    "embedding_model": settings.EMBEDDING_MODEL,
-                    "speaker_id": "speaker_0"
-                }
-                chunks.append(chunk_meta)
+                raw_chunks_to_process.append((chunk_id, chunk_samples, round(start_sec, 2), round(end_sec, 2)))
 
             chunk_index += 1
             start_sec += step
-
             if end_sec >= total_seconds:
                 break
+
+        def save_single_chunk(item):
+            chunk_id, chunk_samples, s_time, e_time = item
+            chunk_filename = f"{chunk_id}.wav"
+            temp_chunk_path = storage_service.base_path / "chunks" / f"temp_{chunk_filename}"
+            self.save_wav_samples(temp_chunk_path, chunk_samples, sr)
+            
+            with open(temp_chunk_path, "rb") as f:
+                storage_url = storage_service.save_file(f.read(), chunk_filename, subfolder="chunks")
+            
+            if temp_chunk_path.exists():
+                temp_chunk_path.unlink()
+
+            return {
+                "chunk_id": chunk_id,
+                "audio_file_id": audio_file_id,
+                "start_time": s_time,
+                "end_time": e_time,
+                "audio_path": storage_url,
+                "embedding_model": settings.EMBEDDING_MODEL,
+                "speaker_id": "speaker_0"
+            }
+
+        from concurrent.futures import ThreadPoolExecutor
+        with ThreadPoolExecutor(max_workers=8) as executor:
+            chunks = list(executor.map(save_single_chunk, raw_chunks_to_process))
 
         return chunks
 

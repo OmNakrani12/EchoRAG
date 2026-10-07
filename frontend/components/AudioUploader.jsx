@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { UploadCloud, FileAudio, CheckCircle2, AlertCircle, Loader2, Sparkles } from 'lucide-react';
+import { UploadCloud, FileAudio, CheckCircle2, AlertCircle, Loader2, Sparkles, Folder, HardDrive, RefreshCw } from 'lucide-react';
+import { API_BASE_URL } from '@/config/api';
 
 export default function AudioUploader({ onAudioUploaded, activeFile }) {
   const [isDragging, setIsDragging] = useState(false);
@@ -59,13 +60,12 @@ export default function AudioUploader({ onAudioUploaded, activeFile }) {
     formData.append('file', file);
 
     try {
-      // Step simulator for UI feedback
       const steps = [
-        'Uploading audio stream to backend...',
+        'Uploading audio stream to Firebase Storage...',
         'Normalizing audio to 16kHz mono WAV format...',
-        'Splitting recording into overlapping 30s chunks...',
-        'Generating Gemini Embedding 2 audio vectors...',
-        'Upserting audio vectors into Qdrant collection...'
+        'Creating overlapping 30s audio chunks...',
+        'Extracting Gemini 768-dim acoustic vectors...',
+        'Upserting audio vectors into Qdrant index...'
       ];
 
       let stepIndex = 0;
@@ -76,7 +76,7 @@ export default function AudioUploader({ onAudioUploaded, activeFile }) {
         }
       }, 1200);
 
-      const response = await fetch('/api/audio/upload', {
+      const response = await fetch(`${API_BASE_URL}/api/audio/upload`, {
         method: 'POST',
         body: formData,
       });
@@ -112,110 +112,123 @@ export default function AudioUploader({ onAudioUploaded, activeFile }) {
   };
 
   return (
-    <div className="glass-card rounded-2xl p-6 relative overflow-hidden">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h2 className="text-lg font-semibold font-heading text-white flex items-center gap-2">
-            <FileAudio className="w-5 h-5 text-indigo-400" />
-            Knowledge Audio Repository
-          </h2>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Upload audio recordings to convert directly into native Qdrant vector embeddings.
-          </p>
+    <div className="firebase-card relative overflow-hidden">
+      {/* Firebase Header Strip */}
+      <div className="firebase-card-header flex items-center justify-between">
+        <div className="flex items-center space-x-2.5">
+          <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+            <Folder className="w-4 h-4" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-white tracking-tight flex items-center gap-2">
+              Firebase Storage Bucket
+            </h3>
+            <p className="text-[11px] text-slate-400">
+              gs://echorag-audio-bucket/originals
+            </p>
+          </div>
         </div>
 
-        {activeFile && (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+        {activeFile ? (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono">
             <CheckCircle2 className="w-3.5 h-3.5" />
-            Ready: {activeFile.total_chunks} Vector Chunks
+            {activeFile.total_chunks} Vectors Indexed
+          </span>
+        ) : (
+          <span className="text-[11px] font-mono text-slate-400 bg-white/5 px-2 py-0.5 rounded border border-white/10">
+            Bucket Status: Ready
           </span>
         )}
       </div>
 
-      {!activeFile ? (
-        <div
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          onClick={() => fileInputRef.current?.click()}
-          className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-200 ${
-            isDragging
-              ? 'border-indigo-500 bg-indigo-500/10 scale-[0.99]'
-              : 'border-slate-800 hover:border-indigo-500/50 hover:bg-slate-900/50'
-          }`}
-        >
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            accept=".wav,.mp3,.m4a,.flac,.ogg"
-            className="hidden"
-          />
-
-          {loading ? (
-            <div className="py-6 flex flex-col items-center justify-center space-y-3">
-              <Loader2 className="w-10 h-10 text-indigo-400 animate-spin" />
-              <p className="text-sm font-medium text-indigo-200 animate-pulse">{progressStep}</p>
-              <p className="text-xs text-slate-400">Processing native audio embeddings via Gemini 2 & Qdrant</p>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center space-y-3">
-              <div className="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 group-hover:scale-110 transition-transform">
-                <UploadCloud className="w-7 h-7" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-slate-200">
-                  <span className="text-indigo-400 font-semibold">Click to upload</span> or drag and drop audio file
-                </p>
-                <p className="text-xs text-slate-400 mt-1">
-                  Supports MP3, WAV, M4A, FLAC, OGG (Up to 100MB)
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="bg-slate-900/80 rounded-xl p-4 border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-lg bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
-              <Sparkles className="w-5 h-5" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-white truncate max-w-xs sm:max-w-md">
-                {activeFile.filename}
-              </p>
-              <div className="flex items-center space-x-3 text-xs text-slate-400 mt-0.5">
-                <span>Duration: {activeFile.duration || '--'}s</span>
-                <span>•</span>
-                <span>Indexed Chunks: {activeFile.total_chunks}</span>
-                <span>•</span>
-                <span className="text-emerald-400 font-medium">Qdrant Active</span>
-              </div>
-            </div>
-          </div>
-
-          <button
+      <div className="p-5">
+        {!activeFile ? (
+          <div
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
             onClick={() => fileInputRef.current?.click()}
-            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors"
+            className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all duration-200 ${
+              isDragging
+                ? 'border-blue-500 bg-blue-500/10 scale-[0.99]'
+                : 'border-white/10 hover:border-blue-500/50 hover:bg-white/[0.02]'
+            }`}
           >
-            Upload Different Audio
-          </button>
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            accept=".wav,.mp3,.m4a,.flac,.ogg"
-            className="hidden"
-          />
-        </div>
-      )}
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              accept=".wav,.mp3,.m4a,.flac,.ogg"
+              className="hidden"
+            />
 
-      {error && (
-        <div className="mt-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center gap-2 text-xs text-red-400">
-          <AlertCircle className="w-4 h-4 shrink-0" />
-          <span>{error}</span>
-        </div>
-      )}
+            {loading ? (
+              <div className="py-6 flex flex-col items-center justify-center space-y-3">
+                <Loader2 className="w-9 h-9 text-blue-400 animate-spin" />
+                <p className="text-xs font-semibold text-blue-300 font-mono">{progressStep}</p>
+                <p className="text-[11px] text-slate-500">Pipeline: Local WAV -&gt; Gemini Embedding -&gt; Qdrant DB</p>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center space-y-3">
+                <div className="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+                  <UploadCloud className="w-6 h-6" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-slate-200">
+                    <span className="text-blue-400">Click to upload file</span> or drag & drop knowledge recording
+                  </p>
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    Accepts MP3, WAV, M4A, FLAC, OGG (Max size: 100MB)
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="bg-slate-900/90 rounded-lg p-4 border border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 shrink-0">
+                <FileAudio className="w-5 h-5" />
+              </div>
+              <div className="overflow-hidden">
+                <p className="text-xs font-bold text-white truncate max-w-xs sm:max-w-md font-mono">
+                  {activeFile.filename}
+                </p>
+                <div className="flex items-center space-x-3 text-[11px] text-slate-400 mt-0.5">
+                  <span>Duration: {activeFile.duration || '--'}s</span>
+                  <span>•</span>
+                  <span>Chunks: {activeFile.total_chunks}</span>
+                  <span>•</span>
+                  <span className="text-emerald-400 font-medium">Qdrant Active</span>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="px-3 py-1.5 rounded-md text-xs font-semibold bg-white/5 hover:bg-white/10 text-slate-200 border border-white/10 transition-colors flex items-center gap-1.5"
+            >
+              <RefreshCw className="w-3.5 h-3.5 text-blue-400" />
+              Upload Different File
+            </button>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              accept=".wav,.mp3,.m4a,.flac,.ogg"
+              className="hidden"
+            />
+          </div>
+        )}
+
+        {error && (
+          <div className="mt-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center gap-2 text-xs text-red-400">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span>{error}</span>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
+

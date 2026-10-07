@@ -1,52 +1,71 @@
 'use client';
 
 import React from 'react';
-import { MessageSquare, User, Bot, Volume2 } from 'lucide-react';
+import { History, User, Bot, Volume2, ShieldCheck, Terminal } from 'lucide-react';
+import { getFullAudioUrl } from '@/config/api';
 
 export default function ConversationHistory({ history }) {
   if (!history || history.length === 0) return null;
 
   return (
-    <div className="glass-card rounded-2xl p-6 relative overflow-hidden">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-base font-semibold font-heading text-white flex items-center gap-2">
-          <MessageSquare className="w-5 h-5 text-indigo-400" />
-          Session Conversation History
-        </h3>
-        <span className="text-xs text-slate-400">
-          {history.length} Exchanged Turn{history.length > 1 ? 's' : ''}
+    <div className="firebase-card relative overflow-hidden">
+      {/* Firebase Header */}
+      <div className="firebase-card-header flex items-center justify-between">
+        <div className="flex items-center space-x-2.5">
+          <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+            <History className="w-4 h-4" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-white tracking-tight">
+              Execution Audit Ledger
+            </h3>
+            <p className="text-[11px] text-slate-400">
+              Session Query & Answer Logs ({history.length} Turns)
+            </p>
+          </div>
+        </div>
+
+        <span className="text-[11px] font-mono text-slate-400 bg-white/5 px-2 py-0.5 rounded border border-white/10">
+          Firebase Log Stream
         </span>
       </div>
 
-      <div className="space-y-4 max-h-[350px] overflow-y-auto pr-1">
-        {history.map((turn, idx) => (
-          <div key={idx} className="space-y-2 p-3.5 rounded-xl bg-slate-950/40 border border-slate-800/80">
-            {/* User Question */}
+      <div className="p-4 space-y-3 max-h-[380px] overflow-y-auto">
+        {history.slice().reverse().map((turn, idx) => (
+          <div key={idx} className="bg-slate-900/90 rounded-xl p-3.5 border border-white/5 space-y-3">
+            {/* User Question Block */}
             <div className="flex items-start space-x-2.5">
-              <div className="w-6 h-6 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center shrink-0 mt-0.5">
+              <div className="w-6 h-6 rounded bg-purple-500/10 text-purple-400 flex items-center justify-center shrink-0 mt-0.5 font-mono text-[10px] font-bold">
                 <User className="w-3.5 h-3.5" />
               </div>
               <div className="flex-1">
-                <p className="text-xs font-semibold text-purple-300">User Spoken Question</p>
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold font-mono text-purple-300">Spoken Question #{history.length - idx}</span>
+                  <span className="text-[10px] font-mono text-slate-500">{turn.timestamp || 'Just now'}</span>
+                </div>
                 {turn.questionAudioUrl && (
-                  <audio controls src={turn.questionAudioUrl} className="h-7 max-w-[200px] mt-1" />
+                  <audio controls src={getFullAudioUrl(turn.questionAudioUrl)} className="h-7 max-w-[220px] mt-1.5 accent-purple-500" />
                 )}
               </div>
             </div>
 
-            {/* AI Grounded Response */}
-            <div className="flex items-start space-x-2.5 pt-2 border-t border-slate-800/50">
-              <div className="w-6 h-6 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0 mt-0.5">
+            {/* AI Grounded Answer Block */}
+            <div className="flex items-start space-x-2.5 pt-2.5 border-t border-white/5">
+              <div className="w-6 h-6 rounded bg-blue-500/10 text-blue-400 flex items-center justify-center shrink-0 mt-0.5">
                 <Bot className="w-3.5 h-3.5" />
               </div>
               <div className="flex-1">
-                <p className="text-xs font-semibold text-indigo-300">VoiceRAG Grounded Answer</p>
-                <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold font-mono text-blue-400 flex items-center gap-1">
+                    <ShieldCheck className="w-3 h-3 text-emerald-400" /> Grounded AI Answer
+                  </span>
+                </div>
+                <div className="bg-slate-950/70 p-2.5 rounded-lg text-xs text-slate-200 mt-1.5 border border-white/5">
                   "{turn.answer}"
-                </p>
+                </div>
                 {turn.audio_url && (
-                  <div className="mt-2 flex items-center space-x-2">
-                    <audio controls src={turn.audio_url} className="h-7 max-w-[200px]" />
+                  <div className="mt-2">
+                    <audio controls src={getFullAudioUrl(turn.audio_url)} className="h-7 max-w-[220px] accent-blue-500" />
                   </div>
                 )}
               </div>
@@ -57,3 +76,5 @@ export default function ConversationHistory({ history }) {
     </div>
   );
 }
+
+

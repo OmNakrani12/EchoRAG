@@ -1,9 +1,11 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Mic, Square, Play, RotateCcw, Send, Loader2, Volume2, AlertCircle } from 'lucide-react';
+import { Mic, Square, Play, RotateCcw, Send, Loader2, Volume2, AlertCircle, Sparkles } from 'lucide-react';
+import { API_BASE_URL } from '@/config/api';
 
 export default function VoiceRecorder({ onQuerySubmitted, activeFileId, history = [] }) {
+
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const [audioBlob, setAudioBlob] = useState(null);
@@ -117,7 +119,7 @@ export default function VoiceRecorder({ onQuerySubmitted, activeFileId, history 
         }
       }, 1000);
 
-      const response = await fetch('/api/query', {
+      const response = await fetch(`${API_BASE_URL}/api/query`, {
         method: 'POST',
         body: formData,
       });
@@ -154,109 +156,122 @@ export default function VoiceRecorder({ onQuerySubmitted, activeFileId, history 
   };
 
   return (
-    <div className="glass-card rounded-2xl p-6 relative overflow-hidden">
-      <div className="mb-6">
-        <h2 className="text-lg font-semibold font-heading text-white flex items-center gap-2">
-          <Mic className="w-5 h-5 text-purple-400" />
-          Ask a Voice Question
-        </h2>
-        <p className="text-xs text-slate-400 mt-0.5">
-          Record your question using your microphone. The AI will retrieve the relevant knowledge context and respond with ONE continuous speech answer.
-        </p>
-      </div>
-
-      <div className="flex flex-col items-center justify-center p-6 bg-slate-950/40 rounded-xl border border-slate-800/80">
-        {!isRecording && !audioBlob && (
-          <button
-            onClick={startRecording}
-            disabled={loading}
-            className="group relative w-24 h-24 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white shadow-xl shadow-indigo-600/30 hover:scale-105 active:scale-95 transition-all duration-200"
-          >
-            <Mic className="w-10 h-10 group-hover:scale-110 transition-transform" />
-            <span className="absolute -bottom-7 text-xs font-semibold text-slate-300">
-              Click to Record
-            </span>
-          </button>
-        )}
-
-        {isRecording && (
-          <div className="flex flex-col items-center space-y-4">
-            <div className="relative">
-              <div className="w-24 h-24 rounded-full bg-red-600/20 border-2 border-red-500 flex items-center justify-center text-red-500 recording-active">
-                <Mic className="w-10 h-10 animate-pulse" />
-              </div>
-            </div>
-
-            <div className="text-center">
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-red-500/10 text-red-400 border border-red-500/20 animate-pulse">
-                <span className="w-2 h-2 rounded-full bg-red-500"></span>
-                🔴 Recording... {formatTime(recordingTime)}
-              </span>
-            </div>
-
-            <button
-              onClick={stopRecording}
-              className="px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-medium text-xs flex items-center gap-2 shadow-lg shadow-red-600/30 transition-colors"
-            >
-              <Square className="w-4 h-4 fill-current" />
-              Stop Recording
-            </button>
+    <div className="firebase-card relative overflow-hidden">
+      {/* Firebase Card Header */}
+      <div className="firebase-card-header flex items-center justify-between">
+        <div className="flex items-center space-x-2.5">
+          <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+            <Mic className="w-4 h-4" />
           </div>
-        )}
-
-        {audioBlob && !loading && (
-          <div className="w-full flex flex-col items-center space-y-4">
-            <div className="w-full bg-slate-900/90 rounded-xl p-4 border border-slate-800 flex items-center justify-between gap-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-9 h-9 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
-                  <Volume2 className="w-4 h-4" />
-                </div>
-                <div>
-                  <p className="text-xs font-medium text-slate-200">Question Recording Ready</p>
-                  <p className="text-[11px] text-slate-400">{formatTime(recordingTime)} Duration</p>
-                </div>
-              </div>
-
-              {audioUrl && (
-                <audio controls src={audioUrl} className="h-8 max-w-[180px] sm:max-w-xs" />
-              )}
-            </div>
-
-            <div className="flex items-center space-x-3 w-full sm:w-auto">
-              <button
-                onClick={resetRecording}
-                className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium text-xs flex items-center justify-center gap-2 border border-slate-700 transition-colors"
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-                Re-record
-              </button>
-
-              <button
-                onClick={submitVoiceQuery}
-                className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30 transition-all hover:scale-[1.02]"
-              >
-                <Send className="w-3.5 h-3.5" />
-                Ask Voice Question
-              </button>
-            </div>
+          <div>
+            <h3 className="text-sm font-bold text-white tracking-tight flex items-center gap-2">
+              Voice Query Studio
+            </h3>
+            <p className="text-[11px] text-slate-400">
+              Native Multimodal Audio RAG Console
+            </p>
           </div>
-        )}
-
-        {loading && (
-          <div className="py-6 flex flex-col items-center space-y-3">
-            <Loader2 className="w-10 h-10 text-purple-400 animate-spin" />
-            <p className="text-sm font-medium text-purple-200 animate-pulse">{queryStep}</p>
-            <p className="text-xs text-slate-400">Generating ONE complete contextual answer & speech audio</p>
-          </div>
-        )}
-      </div>
-
-      {micError && (
-        <div className="mt-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center gap-2 text-xs text-red-400">
-          <AlertCircle className="w-4 h-4 shrink-0" />
-          <span>{micError}</span>
         </div>
-      )}
+
+        <span className="text-[11px] font-mono text-slate-400 bg-white/5 px-2.5 py-1 rounded border border-white/10 flex items-center gap-1.5">
+          <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+          {activeFileId ? 'Audio Context Active' : 'Global Web Search Mode'}
+        </span>
+      </div>
+
+      <div className="p-5">
+        {micError && (
+          <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center gap-2 text-xs text-red-400">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span>{micError}</span>
+          </div>
+        )}
+
+        {loading ? (
+          <div className="py-8 text-center flex flex-col items-center justify-center space-y-3 bg-slate-900/50 rounded-xl border border-white/5">
+            <Loader2 className="w-9 h-9 text-blue-400 animate-spin" />
+            <p className="text-xs font-semibold text-blue-300 font-mono animate-pulse">{queryStep}</p>
+            <p className="text-[11px] text-slate-500">Gemini 1.5 Multimodal Fusion & Qdrant Cosine Retrieval</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {!audioUrl && !isRecording && (
+              <div className="flex flex-col items-center justify-center p-6 bg-slate-900/60 rounded-xl border border-white/5">
+                <button
+                  onClick={startRecording}
+                  className="w-16 h-16 rounded-full bg-blue-600 hover:bg-blue-500 text-white flex items-center justify-center shadow-lg shadow-blue-600/30 transition-all hover:scale-105 mb-3"
+                >
+                  <Mic className="w-7 h-7" />
+                </button>
+                <p className="text-xs font-semibold text-slate-200">
+                  Click microphone to start recording your question
+                </p>
+                <p className="text-[11px] text-slate-500 mt-1">
+                  Speaks directly to Qdrant vector database & Gemini multimodal engine
+                </p>
+              </div>
+            )}
+
+            {isRecording && (
+              <div className="flex flex-col items-center justify-center p-6 bg-slate-900/60 rounded-xl border border-red-500/20">
+                <button
+                  onClick={stopRecording}
+                  className="w-16 h-16 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center justify-center recording-pulse scale-105 mb-3"
+                >
+                  <Square className="w-6 h-6 fill-current" />
+                </button>
+                <p className="text-xs font-bold text-red-400 font-mono animate-pulse flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
+                  Recording Spoken Question: {formatTime(recordingTime)}
+                </p>
+                <p className="text-[11px] text-slate-500 mt-1">
+                  Click square button above to stop recording
+                </p>
+              </div>
+            )}
+
+            {audioBlob && !isRecording && (
+              <div className="bg-slate-900/90 rounded-xl p-4 border border-white/10 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2 text-xs text-slate-300 font-mono">
+                    <Volume2 className="w-4 h-4 text-blue-400" />
+                    <span>Recorded Spoken Question ({formatTime(recordingTime)})</span>
+                  </div>
+
+                  <button
+                    onClick={resetRecording}
+                    className="p-1.5 rounded text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
+                    title="Re-record"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                {audioUrl && (
+                  <audio src={audioUrl} controls className="w-full h-8 accent-blue-500" />
+                )}
+
+                <div className="pt-2 flex items-center justify-end space-x-2">
+                  <button
+                    onClick={resetRecording}
+                    className="px-3 py-1.5 rounded-md text-xs font-semibold bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 transition-colors"
+                  >
+                    Discard
+                  </button>
+
+                  <button
+                    onClick={submitVoiceQuery}
+                    className="px-4 py-1.5 rounded-md text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white flex items-center gap-1.5 shadow-md transition-all"
+                  >
+                    <Send className="w-3.5 h-3.5" />
+                    Execute Voice RAG Query
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

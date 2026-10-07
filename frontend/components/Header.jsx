@@ -1,42 +1,50 @@
 'use client';
 
 import React from 'react';
-import { Mic, Radio, Database, Cpu } from 'lucide-react';
+import { Flame, Database, Cpu, ExternalLink } from 'lucide-react';
 
-export default function Header() {
+export default function Header({ activeFile }) {
   return (
-    <header className="border-b border-slate-800 bg-slate-950/60 backdrop-blur-xl sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/25">
-              <Radio className="w-5 h-5 text-white animate-pulse" />
-            </div>
-            <div>
-              <div className="flex items-center space-x-2">
-                <h1 className="text-xl font-bold font-heading bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-100 to-indigo-200">
-                  VoiceRAG
-                </h1>
-                <span className="text-xs px-2.5 py-0.5 rounded-full font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                  Native Audio RAG
-                </span>
-              </div>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Multimodal Audio Question Answering • Zero Transcript Vector Retrieval
-              </p>
-            </div>
+    <header className="bg-[#1a1a1a] border-b border-[#2c2c2c] px-6 py-4">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shadow-md">
+            <Flame className="w-6 h-6 fill-current" />
           </div>
+          <div>
+            <div className="flex items-center space-x-2">
+              <h1 className="text-xl font-bold text-white tracking-tight">
+                EchoRAG
+              </h1>
+              <span className="text-[10px] font-mono font-semibold px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                Native Audio RAG
+              </span>
+            </div>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Multimodal Spoken Question Answering • Zero Transcript Vector Retrieval
+            </p>
+          </div>
+        </div>
 
-          <div className="flex items-center space-x-3 text-xs">
-            <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-slate-900/80 border border-slate-800 text-slate-300">
-              <Cpu className="w-3.5 h-3.5 text-purple-400" />
-              <span>Gemini Embedding 2</span>
-            </div>
-            <div className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-slate-900/80 border border-slate-800 text-slate-300">
-              <Database className="w-3.5 h-3.5 text-indigo-400" />
-              <span>Qdrant Vector DB</span>
-            </div>
-          </div>
+        <div className="flex flex-wrap items-center gap-2 text-xs font-mono">
+          <span className="px-2.5 py-1 rounded bg-[#242424] text-emerald-400 border border-[#333] flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            Qdrant Vector DB
+          </span>
+
+          <span className="px-2.5 py-1 rounded bg-[#242424] text-blue-400 border border-[#333] flex items-center gap-1.5">
+            <Cpu className="w-3.5 h-3.5 text-blue-400" />
+            Gemini 1.5 Flash
+          </span>
+
+          <a 
+            href="https://echorag-cm29.onrender.com/health" 
+            target="_blank" 
+            rel="noreferrer"
+            className="px-2.5 py-1 rounded bg-[#242424] hover:bg-[#2e2e2e] text-slate-300 border border-[#333] flex items-center gap-1.5 transition-colors"
+          >
+            Render Backend <ExternalLink className="w-3 h-3 text-slate-400" />
+          </a>
         </div>
       </div>
     </header>

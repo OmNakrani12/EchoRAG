@@ -6,6 +6,7 @@ import AudioUploader from '@/components/AudioUploader';
 import VoiceRecorder from '@/components/VoiceRecorder';
 import AnswerDisplay from '@/components/AnswerDisplay';
 import ConversationHistory from '@/components/ConversationHistory';
+import { Terminal } from 'lucide-react';
 
 export default function Home() {
   const [activeFile, setActiveFile] = useState(null);
@@ -25,31 +26,22 @@ export default function Home() {
         questionAudioUrl: questionAudioUrl,
         answer: typeof result.answer === 'object' ? result.answer.text : result.answer,
         audio_url: result.audioUrl || result.audio_url,
-        sources: [],
+        sources: result.sources || [],
         timestamp: new Date().toLocaleTimeString(),
       },
     ]);
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 font-sans selection:bg-indigo-500/30 selection:text-indigo-200">
-      <Header />
+    <div className="min-h-screen flex flex-col bg-[#121212] text-slate-100 font-sans">
+      {/* Top Header Bar */}
+      <Header activeFile={activeFile} />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        {/* Top Hero / Intro Section */}
-        <div className="text-center max-w-3xl mx-auto space-y-2">
-          <h2 className="text-3xl font-extrabold font-heading tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-100 to-indigo-300">
-            Native Audio Retrieval-Augmented Generation
-          </h2>
-          <p className="text-sm text-slate-400">
-            Upload knowledge audio recordings, ask questions via microphone, and hear grounded AI spoken answers.
-          </p>
-        </div>
-
-        {/* Dashboard Main Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Left Column: Knowledge Audio & Voice Question */}
-          <div className="space-y-8">
+      {/* Main Workspace Canvas */}
+      <main className="flex-1 max-w-7xl w-full mx-auto p-6 space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Left Column: Knowledge Audio Repository & Voice Question Studio */}
+          <div className="space-y-6">
             <AudioUploader
               onAudioUploaded={handleAudioUploaded}
               activeFile={activeFile}
@@ -62,21 +54,21 @@ export default function Home() {
             />
           </div>
 
-          {/* Right Column: Grounded AI Spoken Answer & Conversation History */}
-          <div className="space-y-8">
+          {/* Right Column: Grounded AI Voice Answer & Session Conversation History */}
+          <div className="space-y-6">
             {currentResult ? (
               <AnswerDisplay result={currentResult} />
             ) : (
-              <div className="glass-card rounded-2xl p-12 text-center flex flex-col items-center justify-center space-y-4 border border-dashed border-slate-800">
-                <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 animate-pulse-slow">
-                  <span className="text-2xl">🎧</span>
+              <div className="firebase-card p-12 text-center flex flex-col items-center justify-center space-y-3 border-dashed border-[#333]">
+                <div className="w-14 h-14 rounded-2xl bg-[#242424] border border-[#333] flex items-center justify-center text-blue-400">
+                  <Terminal className="w-7 h-7" />
                 </div>
                 <div>
-                  <h3 className="text-base font-semibold text-slate-200 font-heading">
+                  <h3 className="text-sm font-bold text-slate-200">
                     Ready for AI Voice Answering
                   </h3>
                   <p className="text-xs text-slate-400 mt-1 max-w-sm">
-                    Upload an audio recording on the left, then record your spoken question to hear the AI's spoken answer.
+                    Upload an audio recording on the left, then record your spoken question to hear the AI's grounded voice answer.
                   </p>
                 </div>
               </div>
@@ -87,11 +79,14 @@ export default function Home() {
         </div>
       </main>
 
-      <footer className="border-t border-slate-900 bg-slate-950 py-6 text-center text-xs text-slate-400">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p>VoiceRAG • Built with Next.js, FastAPI, Gemini Embedding 2, Qdrant & Gemini Multimodal</p>
-          <p className="text-slate-400">End-to-End Grounded Voice System</p>
-        </div>
+      {/* Footer */}
+      <footer className="border-t border-[#2c2c2c] bg-[#1a1a1a] py-4 px-6 text-xs text-slate-400 flex items-center justify-between">
+        <p className="font-mono text-[11px]">
+          EchoRAG • Next.js 14, FastAPI, Qdrant Vector DB, AWS S3, Gemini Multimodal
+        </p>
+        <span className="text-emerald-400 flex items-center gap-1.5 font-mono text-[11px]">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> Live Backend Connected
+        </span>
       </footer>
     </div>
   );
